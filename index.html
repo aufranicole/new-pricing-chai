@@ -565,7 +565,8 @@ rawClients.forEach(c => {
 let currentFilter = 'all';
 let currentSearch = '';
 
-function newPrice(p) { return Math.round(p * (1 + INCREASE)); }
+const CUSTOM_PRICES = { 'S00221': 70000, 'S00337': 62000 };
+function newPrice(p, ref) { return CUSTOM_PRICES[ref] ?? Math.round(p * (1 + INCREASE)); }
 function fmtPrice(ref, p) { return `${currSymbol(ref)} ${p.toLocaleString()}`; }
 
 function freqLabel(f) {
@@ -575,7 +576,9 @@ function freqLabel(f) {
 }
 
 function buildMessage(client) {
-  const np = newPrice(client.price);
+  const np = newPrice(client.price, client.ref);
+  const diffAmt = np - client.price;
+  const diffPct = Math.round((diffAmt / client.price) * 100);
   const sym = currSymbol(client.ref);
   const priceLine = client.freq === 'Mensualmente'
     ? `${sym} ${client.price.toLocaleString()}/mes → ${sym} ${np.toLocaleString()}/mes`
@@ -598,7 +601,7 @@ El costo de la infraestructura tecnológica ha aumentado considerablemente a niv
 ¿Cómo les afecta?
 
   Plan actual:   ${priceLine}
-  Ajuste:        +20%
+  Ajuste:        +${diffPct}%
   Vigencia:      1 de junio de 2026
 
 Queremos que sepan que valoramos profundamente su confianza en CHAI. Seguiremos comprometidos con brindarles el mismo nivel de atención y calidad que nos caracteriza.
@@ -629,7 +632,7 @@ function renderTable() {
   document.getElementById('subtitle-count').textContent = `— ${filtered.length} cliente${filtered.length !== 1 ? 's' : ''}`;
 
   tbody.innerHTML = filtered.map(c => {
-    const np = newPrice(c.price);
+    const np = newPrice(c.price, c.ref);
     const diff = np - c.price;
     const st = state[c.ref].status;
     const notes = state[c.ref].notes;
