@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nicole · Mi Dinero 💸</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f0eb;--surface:#fffdf9;--card:#ffffff;--ink:#1a1410;--ink2:#6b5e52;
+  --border:#e2d9ce;--coral:#ff6b47;--mint:#2dd4a0;--gold:#f5a623;--sky:#4a9eff;
+  --rose:#ff4d8f;--lav:#8b6fff;--shadow:rgba(26,20,16,0.07);
+  --danger:#ff4444;--success:#2dd4a0;--warn:#f5a623;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;font-size:15px;line-height:1.5;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 90% 5%,rgba(255,107,71,0.06),transparent 60%),radial-gradient(ellipse 50% 30% at 10% 90%,rgba(45,212,160,0.05),transparent 60%);pointer-events:none;z-index:0}
+#confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:white;border-radius:16px;padding:14px 24px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px;z-index:10000;transition:transform .45s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,0.25);max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* LAYOUT */
+.app{max-width:1140px;margin:0 auto;padding:28px 20px;position:relative;z-index:1}
+
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;flex-wrap:wrap;gap:16px}
+.brand h1{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.5px}
+.brand h1 em{color:var(--coral);font-style:normal}
+.brand p{color:var(--ink2);font-size:13px;margin-top:3px}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.level-pill{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:white;border-radius:100px;padding:6px 14px;font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700}
+.xp-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2)}
+.xp-track{width:160px;height:8px;background:var(--border);border-radius:100px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--gold));border-radius:100px;transition:width .9s cubic-bezier(.34,1.56,.64,1)}
+
+/* MONTH SELECTOR */
+.month-nav{display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:12px 20px;margin-bottom:24px;flex-wrap:wrap;box-shadow:0 2px 10px var(--shadow)}
+.month-nav-arrows{display:flex;gap:4px}
+.arrow-btn{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.arrow-btn:hover{background:var(--coral);color:white;border-color:var(--coral)}
+.current-month{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;min-width:160px}
+.month-status-pills{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.month-pill{font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;border:1.5px solid currentColor;font-family:'Bricolage Grotesque',sans-serif;cursor:pointer;transition:all .15s}
+.month-pill:hover{opacity:.8}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:4px;margin-bottom:24px;flex-wrap:wrap;box-shadow:0 1px 6px var(--shadow)}
+.tab{padding:9px 18px;border-radius:10px;border:none;background:transparent;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px;color:var(--ink2);transition:all .18s;white-space:nowrap}
+.tab.active{background:var(--ink);color:white;box-shadow:0 2px 8px var(--shadow)}
+.tab:hover:not(.active){background:var(--border);color:var(--ink)}
+
+/* SECTIONS */
+.section{display:none}.section.active{display:block}
+
+/* GRID */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.g2-3{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}.g2-3{grid-template-columns:1fr}}
+@media(max-width:600px){.g4,.g3,.g2,.g2-3{grid-template-columns:1fr}}
+
+/* CARDS */
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:22px;box-shadow:0 2px 12px var(--shadow)}
+.card-sm{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px}
+
+/* STAT CARDS */
+.stat{padding:20px;border-radius:20px;overflow:hidden;position:relative}
+.stat-emoji{font-size:26px;margin-bottom:8px;display:block}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;opacity:.6;margin-bottom:4px}
+.stat-value{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;line-height:1.1}
+.stat-sub{font-size:12px;margin-top:6px;opacity:.7}
+.stat.coral{background:#fff2ef;border:1.5px solid #ffd4c8;color:#7a2210}
+.stat.mint{background:#edfff8;border:1.5px solid #b8f0dd;color:#0a5538}
+.stat.gold{background:#fffbef;border:1.5px solid #ffe8a0;color:#6a4100}
+.stat.sky{background:#eff7ff;border:1.5px solid #b8d9ff;color:#123d7a}
+.stat.rose{background:#fff0f5;border:1.5px solid #ffc0d9;color:#6b0030}
+.stat.lav{background:#f5f0ff;border:1.5px solid #d4c4ff;color:#3a0d7a}
+.stat.neutral{background:var(--surface);border:1.5px solid var(--border);color:var(--ink)}
+
+/* SECTION TITLE */
+.stitle{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:10px;color:var(--ink)}
+.stitle small{font-size:13px;font-weight:500;color:var(--ink2);font-family:'Instrument Sans',sans-serif}
+
+/* INPUTS */
+.field{margin-bottom:14px}
+.field-label{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.tag{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:700}
+.tag.fixed{background:#ffeee9;color:#b03010}
+.tag.var{background:#e9f7f0;color:#0a5538}
+.tag.income{background:#eef3ff;color:#1a3d9a}
+.inp{width:100%;border:1.5px solid var(--border);border-radius:11px;padding:9px 13px;font-size:15px;font-family:'Instrument Sans',sans-serif;background:var(--surface);color:var(--ink);outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--coral);background:white}
+.inp-prefix{display:flex;align-items:center;gap:6px}
+.inp-prefix span{font-size:13px;color:var(--ink2);font-weight:600;white-space:nowrap}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+@media(max-width:600px){.fields-grid{grid-template-columns:1fr}}
+
+/* BUTTON */
+.btn{padding:10px 22px;border-radius:12px;border:none;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;transition:all .16s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px var(--shadow)}
+.btn:active{transform:translateY(0)}
+.btn-primary{background:var(--ink);color:white}
+.btn-coral{background:var(--coral);color:white}
+.btn-mint{background:var(--mint);color:white}
+.btn-ghost{background:var(--surface);border:1.5px solid var(--border);color:var(--ink2)}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:10px}
+
+/* PROGRESS BAR */
+.bar-wrap{margin-bottom:12px}
+.bar-head{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px;align-items:center}
+.bar-head-label{font-weight:500;display:flex;align-items:center;gap:6px}
+.bar-pct{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px}
+.bar-track{height:10px;background:var(--border);border-radius:100px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:100px;transition:width .8s ease}
+.bar-foot{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:var(--ink2)}
+
+/* INFO BOX */
+.info-box{border-radius:14px;padding:14px 18px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start}
+.info-box .ii{font-size:20px;flex-shrink:0;margin-top:1px}
+.info-box .it{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;margin-bottom:3px}
+.info-box .id{font-size:13px;color:var(--ink2);line-height:1.6}
+.info-box.warn{background:#fffbef;border:1.5px solid #ffe080}
+.info-box.danger{background:#fff2ef;border:1.5px solid #ffd4c8}
+.info-box.good{background:#edfff8;border:1.5px solid #b8f0dd}
+.info-box.info{background:#eff7ff;border:1.5px solid #b8d9ff}
+.info-box.lav{background:#f5f0ff;border:1.5px solid #d4c4ff}
+
+/* CHALLENGE CARDS */
+.challenge{border-radius:20px;padding:20px;margin-bottom:14px;border:1.5px solid transparent;transition:transform .15s,box-shadow .15s}
+.challenge:not(.locked):hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow)}
+.challenge.locked{opacity:.5;filter:grayscale(.3)}
+.challenge.done{opacity:.9}
+.ch-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.ch-icon{font-size:30px}
+.ch-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;border:1.5px solid currentColor;font-family:'Bricolage Grotesque',sans-serif}
+.ch-title{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px}
+.ch-desc{font-size:13px;opacity:.75;margin-bottom:14px;line-height:1.6}
+.ch-progress-wrap{margin-bottom:12px}
+.ch-track{height:12px;border-radius:100px;overflow:hidden;margin-bottom:4px;background:rgba(0,0,0,0.1)}
+.ch-fill{height:100%;border-radius:100px;transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+.ch-pct-row{display:flex;justify-content:space-between;font-size:12px;font-weight:600}
+.ch-action{display:flex;gap:8px;align-items:center}
+.ch-inp{flex:1;border:2px solid rgba(0,0,0,0.12);border-radius:11px;padding:9px 13px;font-size:14px;font-family:'Instrument Sans',sans-serif;background:rgba(255,255,255,.6);outline:none;transition:border-color .2s}
+.ch-inp:focus{border-color:rgba(0,0,0,.3)}
+.ch-btn{padding:10px 18px;border-radius:11px;border:none;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px;transition:all .15s}
+.ch-btn:hover{transform:scale(1.04)}
+.ch-xp{font-size:12px;font-weight:700;opacity:.65;margin-top:8px}
+.ch-reward{padding:10px;border-radius:10px;background:rgba(255,255,255,.5);font-size:13px;font-weight:600;text-align:center;margin-top:8px;display:none}
+.done .ch-reward{display:block}
+
+.ch-coral{background:linear-gradient(135deg,#fff2ef,#ffe0d8);border-color:#ffc4b3;color:#6b1c06}
+.ch-coral .ch-fill{background:linear-gradient(90deg,#ff6b47,#ff9f47)}
+.ch-coral .ch-btn{background:var(--coral);color:white}
+.ch-mint{background:linear-gradient(135deg,#edfff8,#d0ffe9);border-color:#9fefcc;color:#0a4a30}
+.ch-mint .ch-fill{background:linear-gradient(90deg,#2dd4a0,#47d4b3)}
+.ch-mint .ch-btn{background:var(--mint);color:white}
+.ch-gold{background:linear-gradient(135deg,#fffbef,#fff0c4);border-color:#ffe080;color:#5a3800}
+.ch-gold .ch-fill{background:linear-gradient(90deg,#f5a623,#ffcc47)}
+.ch-gold .ch-btn{background:var(--gold);color:white}
+.ch-sky{background:linear-gradient(135deg,#eff7ff,#d8ecff);border-color:#a0ccff;color:#0d2d5a}
+.ch-sky .ch-fill{background:linear-gradient(90deg,#4a9eff,#47c4ff)}
+.ch-sky .ch-btn{background:var(--sky);color:white}
+.ch-rose{background:linear-gradient(135deg,#fff0f5,#ffd6e8);border-color:#ffb0cf;color:#6b0030}
+.ch-rose .ch-fill{background:linear-gradient(90deg,#ff4d8f,#ff47c4)}
+.ch-rose .ch-btn{background:var(--rose);color:white}
+.ch-lav{background:linear-gradient(135deg,#f5f0ff,#e8d8ff);border-color:#c4a0ff;color:#2a0060}
+.ch-lav .ch-fill{background:linear-gradient(90deg,#8b6fff,#c46fff)}
+.ch-lav .ch-btn{background:var(--lav);color:white}
+
+/* DEBT CARDS */
+.debt-card{border-radius:20px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:16px;box-shadow:0 2px 10px var(--shadow)}
+.debt-header{padding:18px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.debt-body{padding:0 22px 20px}
+.debt-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800}
+.debt-rate{font-size:12px;padding:4px 10px;border-radius:100px;font-weight:700}
+.debt-track{height:16px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:8px}
+.debt-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(.34,1.56,.64,1)}
+.debt-history{font-size:12px;color:var(--ink2);margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+
+.debt-coral .debt-fill{background:linear-gradient(90deg,#ff6b47,#ff9f47)}
+.debt-coral .debt-header{background:#fff2ef}
+.debt-coral .debt-rate{background:#ffeee9;color:#c0391b}
+.debt-coral .debt-pay-btn{background:var(--coral);color:white}
+.debt-gold .debt-fill{background:linear-gradient(90deg,#f5a623,#ffcc47)}
+.debt-gold .debt-header{background:#fffbef}
+.debt-gold .debt-rate{background:#fff8e1;color:#8a5c00}
+.debt-gold .debt-pay-btn{background:var(--gold);color:white}
+.debt-sky .debt-fill{background:linear-gradient(90deg,#4a9eff,#47c4ff)}
+.debt-sky .debt-header{background:#eff7ff}
+.debt-sky .debt-rate{background:#eef3ff;color:#2345a8}
+.debt-sky .debt-pay-btn{background:var(--sky);color:white}
+
+.debt-pay-row{display:flex;gap:10px;margin-top:14px}
+.debt-pay-btn{padding:10px 20px;border-radius:12px;border:none;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px;transition:all .15s}
+.debt-pay-btn:hover{transform:scale(1.03)}
+
+/* GOALS */
+.goal-card{border-radius:20px;padding:20px;border:1.5px solid var(--border);background:var(--card);margin-bottom:14px;box-shadow:0 2px 10px var(--shadow)}
+.goal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.goal-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:16px}
+.goal-label{font-size:12px;color:var(--ink2);margin-top:2px}
+.goal-emoji{font-size:30px}
+.goal-track{height:18px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:6px;position:relative}
+.goal-fill{height:100%;border-radius:100px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:10px;font-weight:700;color:white;transition:width 1s cubic-bezier(.34,1.56,.64,1);min-width:32px}
+.goal-amounts{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:12px}
+.goal-action{display:flex;gap:8px}
+.goal-inp{flex:1;border:1.5px solid var(--border);border-radius:11px;padding:9px 13px;font-size:14px;font-family:'Instrument Sans',sans-serif;outline:none;transition:border-color .2s;background:var(--surface)}
+.goal-inp:focus{border-color:var(--mint)}
+.goal-btn{padding:9px 16px;border-radius:11px;border:none;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px;transition:all .15s}
+.goal-btn:hover{transform:scale(1.04)}
+
+/* ACHIEVEMENTS */
+.ach{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:16px;background:var(--surface);border:1.5px solid var(--border);margin-bottom:10px;transition:all .2s}
+.ach.earned{background:linear-gradient(135deg,#fffbef,#fff0c4);border-color:#ffe080;box-shadow:0 2px 12px rgba(245,166,35,.15)}
+.ach-icon{font-size:32px;flex-shrink:0}
+.ach-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px}
+.ach-desc{font-size:12px;color:var(--ink2);margin-top:2px}
+
+/* HISTORY CHART */
+.history-chart{display:flex;align-items:flex-end;gap:10px;height:180px;padding-bottom:28px;position:relative;margin-bottom:8px}
+.history-chart::after{content:'';position:absolute;bottom:28px;left:0;right:0;height:1px;background:var(--border)}
+.hbar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%}
+.hbar-inner{width:100%;display:flex;gap:3px;align-items:flex-end;flex:1;padding-bottom:4px}
+.hbar{flex:1;border-radius:6px 6px 0 0;min-height:4px;transition:height .6s ease;cursor:pointer;position:relative}
+.hbar:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--ink);color:white;font-size:11px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:10}
+.hbar-label{font-size:11px;color:var(--ink2);font-weight:600;text-align:center}
+.hbar-legend{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
+.hbar-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+.hbar-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* MONTH HISTORY TABLE */
+.month-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;margin-bottom:8px;background:var(--surface);border:1.5px solid var(--border);cursor:pointer;transition:all .15s;flex-wrap:wrap}
+.month-row:hover{background:var(--card);border-color:var(--coral)}
+.month-row-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px;min-width:100px}
+.month-row-pills{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.mpill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
+
+/* STREAK */
+.streak-banner{background:linear-gradient(135deg,#ff6b47,#ff4d8f);border-radius:20px;padding:22px 26px;color:white;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;box-shadow:0 4px 20px rgba(255,107,71,.25)}
+.streak-days{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.day-btn{width:40px;height:40px;border-radius:10px;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);cursor:pointer;font-size:13px;font-weight:700;color:white;font-family:'Bricolage Grotesque',sans-serif;transition:all .2s}
+.day-btn.marked{background:white;color:var(--coral);border-color:white}
+.day-btn:hover:not(.marked){background:rgba(255,255,255,.3)}
+.streak-num{font-family:'Bricolage Grotesque',sans-serif;font-size:56px;font-weight:800;line-height:1}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:20px 0}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="brand">
+    <h1>mi dinero<em>.</em> 💸</h1>
+    <p>Control financiero mensual · Nicole Bonilla · Q2 2026</p>
+  </div>
+  <div class="header-right">
+    <div class="level-pill">⚡ <span id="level-txt">Nivel 1</span></div>
+    <div class="xp-row">
+      <span id="xp-txt">0 XP</span>
+      <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MONTH NAV -->
+<div class="month-nav">
+  <div class="month-nav-arrows">
+    <button class="arrow-btn" onclick="changeMonth(-1)">←</button>
+    <button class="arrow-btn" onclick="changeMonth(1)">→</button>
+  </div>
+  <div class="current-month" id="month-title">Marzo 2026</div>
+  <div class="month-status-pills" id="month-pills"></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('inicio')">🏠 Inicio</button>
+  <button class="tab" onclick="showTab('presupuesto')">✏️ Presupuesto</button>
+  <button class="tab" onclick="showTab('deudas')">💳 Deudas</button>
+  <button class="tab" onclick="showTab('retos')">🎯 Retos</button>
+  <button class="tab" onclick="showTab('metas')">✈️ Metas</button>
+  <button class="tab" onclick="showTab('historial')">📊 Historial</button>
+  <button class="tab" onclick="showTab('logros')">🏆 Logros</button>
+</div>
+
+<!-- ========== INICIO ========== -->
+<div id="tab-inicio" class="section active">
+
+  <div class="streak-banner">
+    <div>
+      <div style="font-size:13px;font-weight:600;opacity:.85;margin-bottom:4px">🔥 RACHA ACTIVA — Marca cada día que revisas</div>
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800">¡Estás construyendo el hábito!</div>
+      <div class="streak-days" id="streak-days-wrap"></div>
+    </div>
+    <div style="text-align:right">
+      <div class="streak-num" id="streak-num">0</div>
+      <div style="font-size:13px;opacity:.85">días de racha</div>
+    </div>
+  </div>
+
+  <div class="g4" id="inicio-stats"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="stitle">📊 Deudas activas</div>
+      <div id="inicio-deudas"></div>
+    </div>
+    <div class="card">
+      <div class="stitle">🎯 Próximo reto</div>
+      <div id="inicio-reto"></div>
+    </div>
+  </div>
+
+  <div class="info-box danger" id="inicio-alerta" style="display:none">
+    <div class="ii">🚨</div>
+    <div><div class="it">Cuidado con los intereses</div>
+    <div class="id" id="inicio-alerta-txt"></div></div>
+  </div>
+
+  <div class="info-box warn">
+    <div class="ii">🍎</div>
+    <div><div class="it">Acción de esta semana: Audita Apple</div>
+    <div class="id">Ve a <strong>Ajustes → [tu nombre] → Suscripciones</strong> en tu iPhone. Tienes múltiples cargos Apple.com/bill (~RD$5,000–7,000/mes). Cancela todo lo que no uses activamente y registra el ahorro en el reto correspondiente.</div></div>
+  </div>
+
+</div>
+
+<!-- ========== PRESUPUESTO ========== -->
+<div id="tab-presupuesto" class="section">
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="stitle">💼 Ingresos del mes</div>
+    <div class="fields-grid">
+      <div class="field">
+        <div class="field-label">Salario fijo CEO <span class="tag income">Fijo</span></div>
+        <div class="inp-prefix"><span>RD$</span><input class="inp" id="p-salary" type="number" value="110000" oninput="saveAndRecalc()"></div>
+      </div>
+      <div class="field">
+        <div class="field-label">Extras en RD$ este mes <span class="tag income">Variable</span></div>
+        <div class="inp-prefix"><span>RD$</span><input class="inp" id="p-extra" type="number" value="0" placeholder="0" oninput="saveAndRecalc()"></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">Ingresos en USD (×57 tipo de cambio) <span class="tag income">USD</span></div>
+      <div class="inp-prefix"><span>USD$</span><input class="inp" id="p-usd" type="number" value="0" placeholder="0" oninput="saveAndRecalc()" style="max-width:200px"><span style="font-size:13px;color:var(--ink2);white-space:nowrap">= RD$<span id="p-usd-conv">0</span></span></div>
+    </div>
+    <div style="margin-top:6px;padding:12px;background:var(--surface);border-radius:12px;font-size:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span style="font-weight:500;color:var(--ink2)">Total ingresos este mes:</span>
+      <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:var(--coral)" id="p-total-income">RD$110,000</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="stitle">🏠 Gastos fijos</div>
+    <div class="fields-grid">
+      <div class="field"><div class="field-label">Cuota vehículo <span class="tag fixed">Fijo</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-car" type="number" value="19000" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Alquiler / Renta <span class="tag fixed">Fijo</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-rent" type="number" value="17250" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Mantenimiento <span class="tag fixed">Fijo</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-mant" type="number" value="2500" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Plan móvil <span class="tag fixed">Fijo</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-phone" type="number" value="1000" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Gasolina <span class="tag fixed">Fijo</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-gas" type="number" value="6000" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Otros fijos <span class="tag fixed">Fijo</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-other-fixed" type="number" value="0" oninput="saveAndRecalc()"></div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="stitle">🛍️ Gastos variables <small>— actualiza conforme los tengas</small></div>
+    <div class="fields-grid">
+      <div class="field"><div class="field-label">Supermercado / Hogar <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-super" type="number" value="8000" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Suscripciones Apple/Netflix/Spotify <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-subs" type="number" value="4000" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Restaurantes / Salidas <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-rest" type="number" value="5000" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Uber / Transporte extra <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-uber" type="number" value="1500" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">EDESUR / Electricidad <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-luz" type="number" value="3500" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Altice / Internet hogar <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-altice" type="number" value="1500" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Mi Claro / telefonía hogar <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-claro" type="number" value="0" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Ocio / Licores / Eventos <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-ocio" type="number" value="2500" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Gastos imprevistos <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-misc" type="number" value="0" oninput="saveAndRecalc()"></div></div>
+      <div class="field"><div class="field-label">Pago extra a deudas (TC/préstamos) <span class="tag var">Variable</span></div><div class="inp-prefix"><span>RD$</span><input class="inp" id="p-debt-extra" type="number" value="0" oninput="saveAndRecalc()"></div></div>
+    </div>
+  </div>
+
+  <div id="presupuesto-result"></div>
+
+  <div class="card">
+    <div class="stitle">📊 Distribución del ingreso</div>
+    <div id="budget-bars"></div>
+  </div>
+
+</div>
+
+<!-- ========== DEUDAS ========== -->
+<div id="tab-deudas" class="section">
+
+  <div class="info-box warn" style="margin-bottom:18px">
+    <div class="ii">⚡</div>
+    <div><div class="it">Método Avalanche: Paga mayor interés primero</div>
+    <div class="id">TC Qik (60% anual) → TC BHD (~40%) → Vehículo (~20%). El dinero liberado de los intereses acelera la siguiente deuda. Cada pago que registres aquí se guarda en tu historial.</div></div>
+  </div>
+
+  <!-- TC Qik -->
+  <div class="debt-card debt-coral">
+    <div class="debt-header">
+      <div><div class="debt-name">💳 TC Qik ****3081 — PRIORIDAD #1</div><div style="font-size:12px;color:var(--ink2);margin-top:2px">60% anual · Interés mensual aprox. RD$<span id="d-qik-interest">1,570</span></div></div>
+      <div class="debt-rate" style="background:#ffeee9;color:#c0391b">60% anual 🔥</div>
+    </div>
+    <div class="debt-body">
+      <div class="fields-grid" style="margin-bottom:12px">
+        <div class="field"><div class="field-label" style="font-size:11px">Balance actual</div><div class="inp-prefix"><span>RD$</span><input class="inp" id="d-qik-bal" type="number" value="31409" oninput="updateDebt('qik')" style="padding:8px 11px;font-size:14px"></div></div>
+        <div class="field"><div class="field-label" style="font-size:11px">Límite de crédito</div><div class="inp-prefix"><span>RD$</span><input class="inp" id="d-qik-limit" type="number" value="28000" oninput="updateDebt('qik')" style="padding:8px 11px;font-size:14px"></div></div>
+      </div>
+      <div class="debt-track"><div class="debt-fill" id="d-qik-fill" style="width:100%;background:linear-gradient(90deg,#ff6b47,#ff9f47)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:14px"><span id="d-qik-pct">112% utilizado</span><span>Límite: RD$<span id="d-qik-limit-show">28,000</span></span></div>
+      <div class="debt-pay-row">
+        <input class="inp" id="d-qik-pay" type="number" placeholder="¿Cuánto pagas hoy? RD$" style="flex:1">
+        <button class="btn btn-coral" onclick="makePayment('qik')">💸 Registrar pago</button>
+      </div>
+      <div class="debt-history" id="d-qik-hist"></div>
+    </div>
+  </div>
+
+  <!-- TC BHD -->
+  <div class="debt-card debt-gold">
+    <div class="debt-header">
+      <div><div class="debt-name">💳 TC BHD León — PRIORIDAD #2</div><div style="font-size:12px;color:var(--ink2);margin-top:2px">~40% anual · Interés mensual aprox. RD$<span id="d-bhd-interest">533</span></div></div>
+      <div class="debt-rate" style="background:#fff8e1;color:#8a5c00">~40% anual</div>
+    </div>
+    <div class="debt-body">
+      <div class="fields-grid" style="margin-bottom:12px">
+        <div class="field"><div class="field-label" style="font-size:11px">Balance RD$</div><div class="inp-prefix"><span>RD$</span><input class="inp" id="d-bhd-bal" type="number" value="16000" oninput="updateDebt('bhd')" style="padding:8px 11px;font-size:14px"></div></div>
+        <div class="field"><div class="field-label" style="font-size:11px">Balance USD$</div><div class="inp-prefix"><span>USD$</span><input class="inp" id="d-bhd-usd" type="number" value="150" oninput="updateDebt('bhd')" style="padding:8px 11px;font-size:14px"></div></div>
+      </div>
+      <div class="debt-track"><div class="debt-fill" id="d-bhd-fill" style="width:80%;background:linear-gradient(90deg,#f5a623,#ffcc47)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:14px"><span id="d-bhd-pct">~80% utilizado</span><span>Límite: RD$16,000 + USD$150</span></div>
+      <div class="debt-pay-row">
+        <input class="inp" id="d-bhd-pay" type="number" placeholder="¿Cuánto pagas hoy? RD$" style="flex:1">
+        <button class="btn" style="background:var(--gold);color:white" onclick="makePayment('bhd')">💸 Registrar pago</button>
+      </div>
+      <div class="debt-history" id="d-bhd-hist"></div>
+    </div>
+  </div>
+
+  <!-- Vehículo -->
+  <div class="debt-card debt-sky">
+    <div class="debt-header">
+      <div><div class="debt-name">🚗 Préstamo Vehículo — PRIORIDAD #3</div><div style="font-size:12px;color:var(--ink2);margin-top:2px">Cuota fija RD$19,000/mes · Pago extra al capital reduce el plazo</div></div>
+      <div class="debt-rate" style="background:#eef3ff;color:#2345a8">~20% anual</div>
+    </div>
+    <div class="debt-body">
+      <div class="fields-grid" style="margin-bottom:12px">
+        <div class="field"><div class="field-label" style="font-size:11px">Capital pendiente estimado</div><div class="inp-prefix"><span>RD$</span><input class="inp" id="d-car-bal" type="number" value="800000" oninput="updateDebt('car')" style="padding:8px 11px;font-size:14px"></div></div>
+        <div class="field"><div class="field-label" style="font-size:11px">Pago extra al capital / mes</div><div class="inp-prefix"><span>RD$</span><input class="inp" id="d-car-extra" type="number" value="0" oninput="calcCarInfo()" placeholder="0" style="padding:8px 11px;font-size:14px"></div></div>
+      </div>
+      <div class="debt-track"><div class="debt-fill" id="d-car-fill" style="width:67%;background:linear-gradient(90deg,#4a9eff,#47c4ff)"></div></div>
+      <div id="car-info" style="font-size:13px;color:#0d2d5a;margin-top:10px;padding:11px;background:#eff7ff;border-radius:11px">💡 Ingresa un pago extra para ver el impacto en tu plazo.</div>
+    </div>
+  </div>
+
+  <div class="info-box info">
+    <div class="ii">💡</div>
+    <div><div class="it">Sobre el pago extra al vehículo</div>
+    <div class="id">Cuando pagues extra, dile específicamente al banco: <strong>"Este monto va a capital, no a intereses."</strong> Verifica en tu contrato que no haya penalidad por prepago. En RD los préstamos de vehículo generalmente permiten prepago sin penalidad.</div></div>
+  </div>
+
+</div>
+
+<!-- ========== RETOS ========== -->
+<div id="tab-retos" class="section">
+  <div style="font-size:14px;color:var(--ink2);margin-bottom:4px">Los retos son mensuales. Al comenzar un nuevo mes, se reinician para que puedas seguir ganando XP.</div>
+  <div style="font-size:13px;color:var(--ink2);margin-bottom:18px;font-style:italic">Tip: Completa los retos en orden — cada uno te enseña un hábito nuevo 🚀</div>
+  <div id="challenges-wrap"></div>
+</div>
+
+<!-- ========== METAS ========== -->
+<div id="tab-metas" class="section">
+  <div class="info-box good" style="margin-bottom:18px">
+    <div class="ii">💡</div>
+    <div><div class="it">Cómo funciona: Aparta dinero cada mes</div>
+    <div class="id">Cada vez que transfieras a tu cuenta de ahorro para una meta, regístralo aquí. Las metas <strong>no se reinician</strong> con el mes — se acumulan hasta llegar al objetivo. Crea cuentas Qik separadas para cada meta.</div></div>
+  </div>
+  <div id="goals-wrap"></div>
+</div>
+
+<!-- ========== HISTORIAL ========== -->
+<div id="tab-historial" class="section">
+
+  <div class="stitle">📊 Comparativa mensual <small>— todos tus meses registrados</small></div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div style="font-size:13px;color:var(--ink2);margin-bottom:16px">Haz clic en una barra para ir a ese mes.</div>
+    <div class="history-chart" id="history-chart"></div>
+    <div class="hbar-legend">
+      <div class="hbar-legend-item"><div class="hbar-legend-dot" style="background:var(--coral)"></div>Ingresos</div>
+      <div class="hbar-legend-item"><div class="hbar-legend-dot" style="background:var(--sky)"></div>Gastos fijos</div>
+      <div class="hbar-legend-item"><div class="hbar-legend-dot" style="background:var(--rose)"></div>Gastos variables</div>
+      <div class="hbar-legend-item"><div class="hbar-legend-dot" style="background:var(--mint)"></div>Ahorro/Libre</div>
+    </div>
+  </div>
+
+  <div class="stitle">📋 Detalle por mes</div>
+  <div id="history-list"></div>
+
+  <div class="stitle" style="margin-top:24px">💳 Evolución de deudas</div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="history-chart" id="debt-chart"></div>
+    <div class="hbar-legend">
+      <div class="hbar-legend-item"><div class="hbar-legend-dot" style="background:var(--coral)"></div>TC Qik</div>
+      <div class="hbar-legend-item"><div class="hbar-legend-dot" style="background:var(--gold)"></div>TC BHD</div>
+      <div class="hbar-legend-item"><div class="hbar-legend-dot" style="background:var(--sky)"></div>Vehículo (miles)</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== LOGROS ========== -->
+<div id="tab-logros" class="section">
+
+  <div class="g4" style="margin-bottom:24px">
+    <div class="stat coral"><span class="stat-emoji">⚡</span><div class="stat-label">XP Total</div><div class="stat-value" id="l-xp">0</div></div>
+    <div class="stat mint"><span class="stat-emoji">🎯</span><div class="stat-label">Retos completados</div><div class="stat-value" id="l-retos">0</div></div>
+    <div class="stat gold"><span class="stat-emoji">💸</span><div class="stat-label">Total pagado a deudas</div><div class="stat-value" id="l-paid">RD$0</div></div>
+    <div class="stat sky"><span class="stat-emoji">🔥</span><div class="stat-label">Racha máxima</div><div class="stat-value" id="l-streak">0 días</div></div>
+  </div>
+
+  <div class="stitle">🏆 Mis logros</div>
+  <div id="ach-wrap"></div>
+
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ======================== CONSTANTS ========================
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const LEVELS = [
+  {name:'Principiante 🌱',min:0},{name:'En Camino 🚶',min:300},
+  {name:'Intermedia 💪',min:800},{name:'Avanzada 🔥',min:1800},
+  {name:'Experta ⚡',min:3500},{name:'Libre Financiera 🚀',min:6000},
+];
+
+const CHALLENGE_TEMPLATES = [
+  {id:'audit_apple',title:'Auditoría Apple 🍎',desc:'Entra a Ajustes → [tu nombre] → Suscripciones. Cancela todo lo que no uses activamente. Ingresa cuántas suscripciones cancelaste.',icon:'🍎',color:'ch-coral',xp:150,target:1,unit:'suscripción(es) cancelada(s)',type:'count',reward:'¡Liberaste flujo real mensual! Ese dinero ahora va a deudas. 🎉',tip:'Cargos comunes a revisar: iCloud Storage, Apple Music, Apple TV+, apps olvidadas.'},
+  {id:'no_overdraft',title:'Sin Sobregiro 🚫',desc:'Mantén el balance de TC Qik por debajo de RD$28,000 todo el mes. Cuando lo logres, márcalo.',icon:'🚫',color:'ch-mint',xp:200,target:1,unit:'mes sin sobregiro',type:'count',reward:'¡Tu historial crediticio en la SIB mejora! 📈',tip:'Programa alertas en la app Qik para que te avise al llegar al 80% del límite.'},
+  {id:'pay_5k',title:'Pago de RD$5,000+ 💸',desc:'Haz un solo pago de mínimo RD$5,000 a la TC Qik esta semana (además del mínimo mensual). Regístralo en la pestaña Deudas.',icon:'💸',color:'ch-sky',xp:300,target:5000,unit:'RD$ pagados de RD$5,000',type:'amount',reward:'¡Golpeaste la deuda con fuerza! Cada peso extra reduce el interés. 🥊',tip:'Usa cualquier ingreso extra (freelance, comisiones) para este pago.'},
+  {id:'no_restaurants',title:'Semana Sin Restaurantes 🥗',desc:'Pasa 7 días sin gastar en restaurantes, delivery (PedidosYa, Uber Eats) ni bares. Marca cada día que lo logres.',icon:'🥗',color:'ch-gold',xp:250,target:7,unit:'días completados de 7',type:'count',reward:'Ahorraste ~RD$1,500–2,500 esta semana. ¡Directo a deudas! 🌟',tip:'Cocina en batch los domingos para tener comida lista toda la semana.'},
+  {id:'save_goal',title:'Primer Ahorro del Mes 🌱',desc:'Deposita al menos RD$2,000 en cualquiera de tus metas de ahorro este mes. Regístralo en la pestaña Metas.',icon:'🌱',color:'ch-lav',xp:200,target:2000,unit:'RD$ guardados de RD$2,000',type:'amount',reward:'¡Sembraste la semilla! Los hábitos de ahorro se construyen paso a paso. 🌿',tip:'Hazlo el mismo día que cobras — "págate primero" antes de gastar en otra cosa.'},
+  {id:'budget_done',title:'Presupuesto Completado 📋',desc:'Ingresa todos tus gastos reales del mes en la pestaña Presupuesto y verifica que tu disponible sea positivo.',icon:'📋',color:'ch-coral',xp:150,target:1,unit:'presupuesto completado',type:'count',reward:'¡Tienes claridad total sobre tu dinero! Eso ya es ganancia. 💼',tip:'Hazlo el 1ro de cada mes — destina 15 minutos a actualizar todos los campos.'},
+  {id:'pay_10k',title:'Pago Poderoso 💪',desc:'Haz un pago único de RD$10,000 o más a cualquier tarjeta de crédito en este mes.',icon:'💪',color:'ch-rose',xp:400,target:10000,unit:'RD$ de un solo pago',type:'amount',reward:'¡ESO es un impacto real en la deuda! RD$10K menos de balance = ~RD$500 menos de interés al mes. 🔥',tip:'Junta ingresos extras, comisiones o freelance para lograr este pago.'},
+  {id:'qik_under_limit',title:'TC Qik Bajo el Límite ✅',desc:'Lleva el balance de TC Qik a menos de RD$28,000 (bajo el límite). Sin cargos por sobregiro este mes.',icon:'✅',color:'ch-mint',xp:350,target:1,unit:'logrado',type:'count',reward:'¡Sin más cargos de RD$600 por sobregiro! 🎉 Eso son RD$7,200 al año que te quedas tú.',tip:'Necesitas pagar al menos RD$3,409 para salir del sobregiro actual.'},
+  {id:'reduce_subs',title:'Reduce Suscripciones 50% ✂️',desc:'Reduce tus gastos en suscripciones (Apple, Netflix, Spotify) a menos de RD$2,500 este mes.',icon:'✂️',color:'ch-gold',xp:300,target:1,unit:'meta de suscripciones lograda',type:'count',reward:'¡Más de RD$2,500 libres cada mes! En un año eso es RD$30,000+. 💰',tip:'Comparte Netflix/Spotify con tu pareja para reducir costos a la mitad.'},
+  {id:'zero_qik',title:'TC Qik en CERO 🏆',desc:'El gran reto. Lleva el balance de la TC Qik a RD$0. Puedes hacerlo en varios meses.',icon:'🏆',color:'ch-mint',xp:1000,target:31409,unit:'RD$ saldados en total',type:'cumulative',reward:'¡LIBERADA DE LA TC QIK! Eso libera ~RD$1,570/mes en intereses. ¡IMPARABLE! 🎊🚀',tip:'Con RD$10,000/mes extra durante 3 meses lo logras. Usa el método Avalanche.'},
+];
+
+const ACHIEVEMENTS_DEF = [
+  {id:'first_pay',name:'Primer Pago Extra',desc:'Registraste tu primer pago extra a una deuda',icon:'💳'},
+  {id:'audit',name:'Detective de Suscripciones',desc:'Completaste la auditoría de Apple',icon:'🔍'},
+  {id:'week_clean',name:'Semana Saludable',desc:'7 días sin restaurantes',icon:'🥗'},
+  {id:'first_save',name:'Hormiguita Ahorradora',desc:'Primer ahorro en una meta',icon:'🐜'},
+  {id:'no_over',name:'Sin Sobregiro',desc:'Un mes sin cargos por sobregiro',icon:'✅'},
+  {id:'level2',name:'Subiste de Nivel',desc:'Llegaste al nivel Intermedia',icon:'⬆️'},
+  {id:'qik_zero',name:'TC Qik: LIQUIDADA 🏆',desc:'Llevaste la TC Qik a RD$0',icon:'🏆'},
+  {id:'streak7',name:'Racha de 7 Días',desc:'7 días seguidos revisando tus finanzas',icon:'🔥'},
+  {id:'saved20k',name:'RD$20K Ahorrados',desc:'Acumulaste RD$20,000 en metas de ahorro',icon:'🌟'},
+  {id:'paid50k',name:'RD$50K Pagados',desc:'Pagaste RD$50,000 acumulados a deudas',icon:'💪'},
+  {id:'three_months',name:'3 Meses Seguidos',desc:'Registraste datos 3 meses consecutivos',icon:'📅'},
+];
+
+// ======================== STATE ========================
+function defaultMonthData(year, month) {
+  return {
+    year, month,
+    income: { salary:110000, extra:0, usd:0 },
+    expenses: { car:19000, rent:17250, mant:2500, phone:1000, gas:6000, otherFixed:0,
+                super:8000, subs:4000, rest:5000, uber:1500, luz:3500, altice:1500, claro:0, ocio:2500, misc:0, debtExtra:0 },
+    debts: { qikBal:31409, qikLimit:28000, bhdBal:16000, bhdUsd:150, carBal:800000, carExtra:0 },
+    challengeProgress: {},
+    payments: { qik:[], bhd:[], car:[] },
+    streak: [false,false,false,false,false,false,false],
+    notes: '',
+    closed: false,
+  };
+}
+
+let G = loadGlobal();
+function loadGlobal() {
+  const saved = localStorage.getItem('nicole_finance_v3');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return {
+    currentYear: 2026,
+    currentMonth: 2, // 0-indexed, March=2
+    xp: 0,
+    maxStreak: 0,
+    totalPaid: 0,
+    achievements: {},
+    goals: [
+      {id:'europa',name:'Viaje a Europa ✈️',emoji:'✈️',target:170000,saved:0,color:'#4a9eff',label:'Tu cumpleaños en Europa'},
+      {id:'tucson',name:'Hyundai Tucson 🚙',emoji:'🚙',target:300000,saved:0,color:'#2dd4a0',label:'El carro de tus sueños'},
+      {id:'aparto',name:'Apartamento con Sofía 🏠',emoji:'🏠',target:100000,saved:0,color:'#8b6fff',label:'Fondo inicial / depósito'},
+      {id:'emergencia',name:'Fondo de Emergencia 🛡️',emoji:'🛡️',target:135000,saved:0,color:'#f5a623',label:'3 meses de gastos'},
+    ],
+    months: {},
+    cumulativeChallenge: { zero_qik: 0 },
+  };
+}
+
+function save() {
+  localStorage.setItem('nicole_finance_v3', JSON.stringify(G));
+}
+
+function getMonthKey(y, m) { return `${y}_${m}`; }
+function getCurrentKey() { return getMonthKey(G.currentYear, G.currentMonth); }
+
+function getMonthData(y, m) {
+  const key = getMonthKey(y, m);
+  if (!G.months[key]) G.months[key] = defaultMonthData(y, m);
+  return G.months[key];
+}
+
+function currentMonth() { return getMonthData(G.currentYear, G.currentMonth); }
+
+// ======================== NAVIGATION ========================
+function changeMonth(dir) {
+  G.currentMonth += dir;
+  if (G.currentMonth > 11) { G.currentMonth = 0; G.currentYear++; }
+  if (G.currentMonth < 0) { G.currentMonth = 11; G.currentYear--; }
+  save();
+  renderAll();
+}
+
+// ======================== RENDER ALL ========================
+function renderAll() {
+  renderMonthNav();
+  loadPresupuesto();
+  loadDeudas();
+  renderChallenges();
+  renderGoals();
+  renderInicio();
+  renderHistorial();
+  renderLogros();
+  updateXPBar();
+}
+
+function renderMonthNav() {
+  const md = currentMonth();
+  document.getElementById('month-title').textContent = MONTHS[G.currentMonth] + ' ' + G.currentYear;
+  const pills = document.getElementById('month-pills');
+  const income = calcIncome(md);
+  const {total: totalExp} = calcExpenses(md);
+  const free = income - totalExp;
+  pills.innerHTML = `
+    <span class="month-pill" style="background:#edfff8;color:#0a5538;border-color:#2dd4a0">💰 RD${fmt(income)}</span>
+    <span class="month-pill" style="background:#fff2ef;color:#7a2210;border-color:#ff6b47">📤 RD${fmt(totalExp)}</span>
+    <span class="month-pill" style="${free>=0?'background:#edfff8;color:#0a5538;border-color:#2dd4a0':'background:#fff2ef;color:#7a2210;border-color:#ff6b47'}">${free>=0?'✅':'⚠️'} RD${fmt(free)}</span>
+  `;
+}
+
+// ======================== CALCULATIONS ========================
+function calcIncome(md) {
+  return (md.income.salary||0) + (md.income.extra||0) + ((md.income.usd||0)*57);
+}
+function calcExpenses(md) {
+  const e = md.expenses;
+  const fixed = (e.car||0)+(e.rent||0)+(e.mant||0)+(e.phone||0)+(e.gas||0)+(e.otherFixed||0);
+  const variable = (e.super||0)+(e.subs||0)+(e.rest||0)+(e.uber||0)+(e.luz||0)+(e.altice||0)+(e.claro||0)+(e.ocio||0)+(e.misc||0)+(e.debtExtra||0);
+  return { fixed, variable, total: fixed+variable };
+}
+function fmt(n) { return '$' + Math.round(n||0).toLocaleString('es-DO'); }
+
+// ======================== PRESUPUESTO ========================
+function loadPresupuesto() {
+  const md = currentMonth();
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val||0; };
+  setVal('p-salary', md.income.salary);
+  setVal('p-extra', md.income.extra);
+  setVal('p-usd', md.income.usd);
+  setVal('p-car', md.expenses.car);
+  setVal('p-rent', md.expenses.rent);
+  setVal('p-mant', md.expenses.mant);
+  setVal('p-phone', md.expenses.phone);
+  setVal('p-gas', md.expenses.gas);
+  setVal('p-other-fixed', md.expenses.otherFixed);
+  setVal('p-super', md.expenses.super);
+  setVal('p-subs', md.expenses.subs);
+  setVal('p-rest', md.expenses.rest);
+  setVal('p-uber', md.expenses.uber);
+  setVal('p-luz', md.expenses.luz);
+  setVal('p-altice', md.expenses.altice);
+  setVal('p-claro', md.expenses.claro);
+  setVal('p-ocio', md.expenses.ocio);
+  setVal('p-misc', md.expenses.misc);
+  setVal('p-debt-extra', md.expenses.debtExtra);
+  updatePresupuestoUI();
+}
+
+function saveAndRecalc() {
+  const md = currentMonth();
+  const getVal = (id) => +(document.getElementById(id)?.value||0);
+  md.income.salary = getVal('p-salary');
+  md.income.extra = getVal('p-extra');
+  md.income.usd = getVal('p-usd');
+  md.expenses.car = getVal('p-car');
+  md.expenses.rent = getVal('p-rent');
+  md.expenses.mant = getVal('p-mant');
+  md.expenses.phone = getVal('p-phone');
+  md.expenses.gas = getVal('p-gas');
+  md.expenses.otherFixed = getVal('p-other-fixed');
+  md.expenses.super = getVal('p-super');
+  md.expenses.subs = getVal('p-subs');
+  md.expenses.rest = getVal('p-rest');
+  md.expenses.uber = getVal('p-uber');
+  md.expenses.luz = getVal('p-luz');
+  md.expenses.altice = getVal('p-altice');
+  md.expenses.claro = getVal('p-claro');
+  md.expenses.ocio = getVal('p-ocio');
+  md.expenses.misc = getVal('p-misc');
+  md.expenses.debtExtra = getVal('p-debt-extra');
+  save();
+  updatePresupuestoUI();
+  renderMonthNav();
+  renderInicio();
+}
+
+function updatePresupuestoUI() {
+  const md = currentMonth();
+  const income = calcIncome(md);
+  const {fixed, variable, total} = calcExpenses(md);
+  const free = income - total;
+  const usdConv = (md.income.usd||0)*57;
+  const el = document.getElementById('p-usd-conv');
+  if(el) el.textContent = Math.round(usdConv).toLocaleString('es-DO');
+  const ti = document.getElementById('p-total-income');
+  if(ti) ti.textContent = 'RD' + fmt(income);
+
+  const res = document.getElementById('presupuesto-result');
+  if(!res) return;
+  const freePct = income > 0 ? Math.round((free/income)*100) : 0;
+  const cls = free > 15000 ? 'good' : free > 0 ? 'warn' : 'danger';
+  const emoji = free > 15000 ? '🚀' : free > 0 ? '⚠️' : '🚨';
+  const msg = free > 15000
+    ? `¡Excelente! Destina al menos <strong>RD${fmt(Math.round(free*0.6))}</strong> a pagar deudas y <strong>RD${fmt(Math.round(free*0.2))}</strong> a metas de ahorro.`
+    : free > 0
+    ? `Disponible ajustado. Revisa si puedes reducir algún gasto variable.`
+    : `Tus gastos superan tus ingresos. Necesitas recortar urgente.`;
+
+  res.innerHTML = `<div class="info-box ${cls}" style="margin-bottom:18px">
+    <div class="ii">${emoji}</div>
+    <div>
+      <div class="it">${MONTHS[G.currentMonth]} ${G.currentYear} · Tu resumen</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:10px 0;flex-wrap:wrap">
+        <div><div style="font-size:11px;opacity:.6;font-weight:600;text-transform:uppercase">Ingresos</div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800">RD${fmt(income)}</div></div>
+        <div><div style="font-size:11px;opacity:.6;font-weight:600;text-transform:uppercase">Gastos</div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800">RD${fmt(total)}</div></div>
+        <div><div style="font-size:11px;opacity:.6;font-weight:600;text-transform:uppercase">Disponible</div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:800">RD${fmt(free)} (${freePct}%)</div></div>
+      </div>
+      <div class="id">${msg}</div>
+    </div>
+  </div>`;
+
+  // Budget bars
+  const cats = [
+    {name:'🏠 Vivienda & Mant.',amt:(md.expenses.rent||0)+(md.expenses.mant||0),max:income*0.3,color:'#ff6b47'},
+    {name:'🚗 Vehículo & Trans.',amt:(md.expenses.car||0)+(md.expenses.gas||0)+(md.expenses.uber||0),max:income*0.22,color:'#4a9eff'},
+    {name:'⚡ Servicios',amt:(md.expenses.luz||0)+(md.expenses.altice||0)+(md.expenses.phone||0)+(md.expenses.claro||0),max:income*0.1,color:'#8b6fff'},
+    {name:'🛍️ Alimentación',amt:md.expenses.super||0,max:income*0.15,color:'#2dd4a0'},
+    {name:'🎵 Suscripciones',amt:md.expenses.subs||0,max:income*0.05,color:'#f5a623'},
+    {name:'🍽️ Restaurantes',amt:md.expenses.rest||0,max:income*0.08,color:'#ff4d8f'},
+    {name:'🎉 Ocio',amt:md.expenses.ocio||0,max:income*0.05,color:'#ff9f47'},
+    {name:'📦 Varios',amt:(md.expenses.misc||0)+(md.expenses.otherFixed||0),max:income*0.05,color:'#c0c0c0'},
+  ].filter(c=>c.amt>0);
+
+  const barsEl = document.getElementById('budget-bars');
+  if(!barsEl) return;
+  barsEl.innerHTML = cats.map(c => {
+    const pct = income>0 ? Math.min(120, Math.round((c.amt/income)*100)) : 0;
+    const tpct = income>0 ? Math.round((c.max/income)*100) : 0;
+    const over = c.amt > c.max;
+    return `<div class="bar-wrap">
+      <div class="bar-head">
+        <span class="bar-head-label">${c.name}</span>
+        <span class="bar-pct" style="background:${over?'#ffeee9':'#edfff8'};color:${over?'#c0391b':'#0a5538'}">${pct}%${over?' ⚠️':' ✓'}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%;background:${c.color}"></div>
+        <div style="position:absolute;top:0;bottom:0;left:${tpct}%;width:2px;background:rgba(0,0,0,.15);border-radius:2px"></div>
+      </div>
+      <div class="bar-foot"><span>RD${fmt(c.amt)}</span><span>Meta: RD${fmt(Math.round(c.max))}</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ======================== DEUDAS ========================
+function loadDeudas() {
+  const md = currentMonth();
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+  setVal('d-qik-bal', md.debts.qikBal);
+  setVal('d-qik-limit', md.debts.qikLimit);
+  setVal('d-bhd-bal', md.debts.bhdBal);
+  setVal('d-bhd-usd', md.debts.bhdUsd);
+  setVal('d-car-bal', md.debts.carBal);
+  setVal('d-car-extra', md.debts.carExtra);
+  updateDebt('qik'); updateDebt('bhd'); updateDebt('car');
+  renderPayHistory();
+}
+
+function updateDebt(id) {
+  const md = currentMonth();
+  if(id==='qik') {
+    const bal = +(document.getElementById('d-qik-bal')?.value||0);
+    const lim = +(document.getElementById('d-qik-limit')?.value||28000);
+    md.debts.qikBal = bal; md.debts.qikLimit = lim;
+    const pct = lim>0 ? Math.min(120, Math.round((bal/lim)*100)) : 0;
+    const fill = document.getElementById('d-qik-fill');
+    if(fill) fill.style.width = Math.min(100,pct)+'%';
+    const pctEl = document.getElementById('d-qik-pct');
+    if(pctEl) pctEl.textContent = pct+'% utilizado';
+    const limShow = document.getElementById('d-qik-limit-show');
+    if(limShow) limShow.textContent = Math.round(lim).toLocaleString('es-DO');
+    const intEl = document.getElementById('d-qik-interest');
+    if(intEl) intEl.textContent = Math.round(bal*0.05).toLocaleString('es-DO');
+    // Update cumulative challenge
+    if(G.cumulativeChallenge) {
+      const paid = G.totalPaid || 0;
+      G.cumulativeChallenge.zero_qik = Math.min(31409, paid);
+    }
+  }
+  if(id==='bhd') {
+    const bal = +(document.getElementById('d-bhd-bal')?.value||0);
+    const usd = +(document.getElementById('d-bhd-usd')?.value||0);
+    md.debts.bhdBal = bal; md.debts.bhdUsd = usd;
+    const total = bal + usd*57;
+    const intEl = document.getElementById('d-bhd-interest');
+    if(intEl) intEl.textContent = Math.round(total*0.033).toLocaleString('es-DO');
+  }
+  if(id==='car') {
+    const bal = +(document.getElementById('d-car-bal')?.value||0);
+    md.debts.carBal = bal;
+    const pct = Math.min(100, Math.round((bal/1200000)*100));
+    const fill = document.getElementById('d-car-fill');
+    if(fill) fill.style.width = pct+'%';
+    calcCarInfo();
+  }
+  save();
+}
+
+function calcCarInfo() {
+  const extra = +(document.getElementById('d-car-extra')?.value||0);
+  const bal = +(document.getElementById('d-car-bal')?.value||0);
+  const md = currentMonth();
+  md.debts.carExtra = extra;
+  save();
+  const infoEl = document.getElementById('car-info');
+  if(!infoEl) return;
+  if(extra > 0) {
+    const monthsReduced = Math.round(bal / (19000 + extra) * 0.3);
+    infoEl.innerHTML = `💡 Pagando <strong>RD${fmt(extra)} extra/mes</strong> al capital, reduces el plazo aprox. <strong>${monthsReduced} meses</strong> y ahorras decenas de miles en intereses. ¡Siempre dile al banco: "pago a capital"!`;
+  } else {
+    infoEl.innerHTML = `💡 Ingresa un monto extra para ver el impacto en tu plazo.`;
+  }
+}
+
+function makePayment(id) {
+  const inp = document.getElementById('d-'+id+'-pay');
+  const amount = +(inp?.value||0);
+  if(!amount || amount <= 0) { showToast('Ingresa un monto válido'); return; }
+  const md = currentMonth();
+  const date = new Date().toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit'});
+  md.payments[id].push({ amount, date, month: MONTHS[G.currentMonth]+' '+G.currentYear });
+
+  // Update balance
+  if(id==='qik') { md.debts.qikBal = Math.max(0, (md.debts.qikBal||0) - amount); }
+  if(id==='bhd') { md.debts.bhdBal = Math.max(0, (md.debts.bhdBal||0) - amount); }
+  if(id==='car') { md.debts.carBal = Math.max(0, (md.debts.carBal||0) - amount); }
+
+  G.totalPaid = (G.totalPaid||0) + amount;
+  save();
+
+  // Reload debt fields
+  loadDeudas();
+
+  // XP
+  const xp = Math.min(400, Math.floor(amount/80));
+  addXP(xp, `Pago RD${fmt(amount)} a ${id.toUpperCase()}`);
+
+  // Achievements
+  earnAch('first_pay');
+  if(G.totalPaid >= 50000) earnAch('paid50k');
+  if(amount >= 10000) {
+    // progress challenge
+    const ch = md.challengeProgress || (md.challengeProgress = {});
+    ch['pay_10k'] = Math.min(10000, (ch['pay_10k']||0) + amount);
+    if(ch['pay_10k'] >= 10000) completeChallenge('pay_10k');
+  }
+
+  // cumulative zero_qik
+  if(id==='qik') {
+    G.cumulativeChallenge = G.cumulativeChallenge || {};
+    G.cumulativeChallenge.zero_qik = (G.cumulativeChallenge.zero_qik||0) + amount;
+    if(G.cumulativeChallenge.zero_qik >= 31409 && md.debts.qikBal <= 0) { earnAch('qik_zero'); launchConfetti(); }
+  }
+
+  if(inp) inp.value = '';
+  renderPayHistory();
+  renderChallenges();
+  renderInicio();
+
+  showToast(`💸 Pago de RD${fmt(amount)} registrado!`);
+  if(amount >= 5000) launchConfetti();
+}
+
+function renderPayHistory() {
+  ['qik','bhd'].forEach(id => {
+    const md = currentMonth();
+    const hist = document.getElementById('d-'+id+'-hist');
+    if(!hist) return;
+    const payments = md.payments[id] || [];
+    if(payments.length === 0) { hist.innerHTML = ''; return; }
+    hist.innerHTML = payments.slice(-5).reverse().map(p=>
+      `<span style="background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:100px">✅ RD${fmt(p.amount)} · ${p.date}</span>`
+    ).join('');
+  });
+}
+
+// ======================== CHALLENGES ========================
+function renderChallenges() {
+  const wrap = document.getElementById('challenges-wrap');
+  if(!wrap) return;
+  const md = currentMonth();
+  const prog = md.challengeProgress || (md.challengeProgress = {});
+
+  wrap.innerHTML = CHALLENGE_TEMPLATES.map((ch, i) => {
+    let progress = ch.type === 'cumulative'
+      ? (G.cumulativeChallenge?.zero_qik || 0)
+      : (prog[ch.id] || 0);
+    const pct = Math.min(100, Math.round((progress/ch.target)*100));
+    const done = ch.type === 'cumulative'
+      ? (progress >= ch.target)
+      : (prog[ch.id+'_done'] || false);
+    const locked = i > 0 && !CHALLENGE_TEMPLATES.slice(0,i).every(c=>
+      (md.challengeProgress?.[c.id+'_done']) || (c.type==='cumulative' && (G.cumulativeChallenge?.zero_qik||0) >= c.target)
+    ) && i > 2; // first 3 always unlocked
+
+    return `<div class="challenge ${ch.color} ${done?'done':''} ${locked?'locked':''}">
+      <div class="ch-head">
+        <span class="ch-icon">${ch.icon}</span>
+        <span class="ch-badge">${done?'✅ COMPLETADO':locked?'🔒 BLOQUEADO':i<3?'🔓 ACTIVO':'🎯 ACTIVO'}</span>
+      </div>
+      <div class="ch-title">${ch.title}</div>
+      <div class="ch-desc">${ch.desc}</div>
+      ${ch.tip?`<div style="font-size:12px;opacity:.65;margin-bottom:12px;padding:8px 12px;background:rgba(255,255,255,.5);border-radius:8px">💡 <strong>Tip:</strong> ${ch.tip}</div>`:''}
+      ${!locked?`
+      <div class="ch-progress-wrap">
+        <div class="ch-track"><div class="ch-fill" style="width:${pct}%"></div></div>
+        <div class="ch-pct-row"><span>${pct}% · ${ch.unit}</span><span>⚡ +${ch.xp} XP</span></div>
+      </div>
+      ${!done?`<div class="ch-action">
+        <input class="ch-inp" id="ch-${ch.id}" type="number" placeholder="${ch.type==='count'?'Ingresa cantidad':'Ingresa monto RD$'}">
+        <button class="ch-btn" onclick="updateChallenge('${ch.id}')">Registrar</button>
+      </div>`:''}
+      ${done?`<div class="ch-reward">🎉 ${ch.reward}</div>`:''}
+      `:`<div style="font-size:13px;opacity:.6;margin-top:8px">Completa los retos anteriores para desbloquear.</div>`}
+    </div>`;
+  }).join('');
+}
+
+function updateChallenge(id) {
+  const ch = CHALLENGE_TEMPLATES.find(c=>c.id===id);
+  if(!ch) return;
+  const md = currentMonth();
+  const prog = md.challengeProgress || (md.challengeProgress={});
+  if(prog[id+'_done']) return;
+
+  const inp = document.getElementById('ch-'+id);
+  const val = +(inp?.value||0);
+  if(!val || val<=0) { showToast('Ingresa un valor válido'); return; }
+
+  if(ch.type==='cumulative') {
+    G.cumulativeChallenge = G.cumulativeChallenge||{};
+    G.cumulativeChallenge[id] = (G.cumulativeChallenge[id]||0) + val;
+    if(G.cumulativeChallenge[id] >= ch.target) completeChallenge(id);
+  } else {
+    prog[id] = Math.min(ch.target, (prog[id]||0) + val);
+    if(prog[id] >= ch.target) completeChallenge(id);
+    else {
+      const p = Math.round((prog[id]/ch.target)*100);
+      addXP(Math.round(ch.xp*0.05), `Progreso en ${ch.title}`);
+      showToast(`${p}% en "${ch.title}"`);
+    }
+  }
+
+  if(inp) inp.value = '';
+  save();
+  renderChallenges();
+
+  // specific achievements
+  if(id==='audit_apple') earnAch('audit');
+  if(id==='no_restaurants') earnAch('week_clean');
+  if(id==='no_overdraft') earnAch('no_over');
+}
+
+function completeChallenge(id) {
+  const ch = CHALLENGE_TEMPLATES.find(c=>c.id===id);
+  if(!ch) return;
+  const md = currentMonth();
+  const prog = md.challengeProgress||(md.challengeProgress={});
+  if(prog[id+'_done']) return;
+  prog[id+'_done'] = true;
+  prog[id] = ch.target;
+  save();
+  addXP(ch.xp, `¡${ch.title} completado!`);
+  launchConfetti();
+  showToast(`🏆 ¡RETO COMPLETADO! ${ch.title}`);
+  setTimeout(()=>renderChallenges(),300);
+}
+
+// ======================== GOALS ========================
+function renderGoals() {
+  const wrap = document.getElementById('goals-wrap');
+  if(!wrap) return;
+  wrap.innerHTML = G.goals.map(g => {
+    const pct = Math.min(100, Math.round((g.saved/g.target)*100));
+    return `<div class="goal-card">
+      <div class="goal-head">
+        <div><div class="goal-name">${g.name}</div><div class="goal-label">${g.label}</div></div>
+        <div class="goal-emoji">${g.emoji}</div>
+      </div>
+      <div class="goal-track">
+        <div class="goal-fill" style="width:${pct}%;background:${g.color}">${pct>12?pct+'%':''}</div>
+      </div>
+      <div class="goal-amounts">
+        <span style="font-weight:600">RD${fmt(g.saved)} guardados</span>
+        <span>Meta: RD${fmt(g.target)}</span>
+      </div>
+      <div class="goal-action">
+        <input class="goal-inp" id="goal-${g.id}" type="number" placeholder="¿Cuánto apartas hoy?">
+        <button class="goal-btn" style="background:${g.color};color:white" onclick="addGoal('${g.id}')">+ Guardar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addGoal(id) {
+  const g = G.goals.find(x=>x.id===id);
+  if(!g) return;
+  const inp = document.getElementById('goal-'+id);
+  const val = +(inp?.value||0);
+  if(!val||val<=0) { showToast('Ingresa un monto'); return; }
+  g.saved += val;
+  save();
+  earnAch('first_save');
+  addXP(Math.min(150, Math.floor(val/50)), `Ahorro para ${g.name}`);
+  const total = G.goals.reduce((a,x)=>a+x.saved,0);
+  if(total >= 20000) earnAch('saved20k');
+  if(g.saved >= g.target) { showToast(`🎉 ¡META ALCANZADA! ${g.name}`); launchConfetti(); }
+  else showToast(`Guardaste RD${fmt(val)} para ${g.name} ✅`);
+  if(inp) inp.value='';
+  renderGoals();
+}
+
+// ======================== INICIO ========================
+function renderInicio() {
+  const md = currentMonth();
+  const income = calcIncome(md);
+  const {fixed, variable, total} = calcExpenses(md);
+  const free = income - total;
+  const qikBal = md.debts.qikBal||0;
+  const bhdBal = (md.debts.bhdBal||0) + (md.debts.bhdUsd||0)*57;
+  const qikInterest = Math.round(qikBal*0.05);
+
+  // Stats
+  const stats = document.getElementById('inicio-stats');
+  if(stats) stats.innerHTML = `
+    <div class="stat coral"><span class="stat-emoji">💰</span><div class="stat-label">Ingresos del mes</div><div class="stat-value">RD${fmt(income)}</div><div class="stat-sub">${MONTHS[G.currentMonth]} ${G.currentYear}</div></div>
+    <div class="stat ${free>0?'mint':'rose'}"><span class="stat-emoji">${free>0?'✅':'⚠️'}</span><div class="stat-label">Disponible</div><div class="stat-value">RD${fmt(free)}</div><div class="stat-sub">${Math.round((free/income)*100)}% del ingreso</div></div>
+    <div class="stat gold"><span class="stat-emoji">⚡</span><div class="stat-label">XP Total</div><div class="stat-value">${G.xp}</div><div class="stat-sub">${getLevelName()}</div></div>
+    <div class="stat sky"><span class="stat-emoji">💸</span><div class="stat-label">Pagado a deudas</div><div class="stat-value">RD${fmt(G.totalPaid)}</div><div class="stat-sub">Acumulado total</div></div>
+  `;
+
+  // Deudas
+  const deudas = document.getElementById('inicio-deudas');
+  if(deudas) {
+    const total_debt = qikBal + bhdBal + (md.debts.carBal||0);
+    deudas.innerHTML = `
+      <div class="bar-wrap" style="margin-bottom:14px">
+        <div class="bar-head"><span class="bar-head-label">💳 TC Qik ****3081</span><span style="font-weight:700;color:${qikBal>0?'#c0391b':'#0a5538'}">RD${fmt(qikBal)}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(qikBal/28000)*100)}%;background:linear-gradient(90deg,#ff6b47,#ff9f47)"></div></div>
+        <div class="bar-foot"><span style="color:var(--danger)">Interés mensual: ~RD${fmt(qikInterest)}</span><span>60% anual</span></div>
+      </div>
+      <div class="bar-wrap" style="margin-bottom:14px">
+        <div class="bar-head"><span class="bar-head-label">💳 TC BHD León</span><span style="font-weight:700;color:#8a5c00">RD${fmt(md.debts.bhdBal||0)} + USD$${md.debts.bhdUsd||0}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,((md.debts.bhdBal||0)/16000)*100)}%;background:linear-gradient(90deg,#f5a623,#ffcc47)"></div></div>
+        <div class="bar-foot"><span>~40% anual</span><span>Prioridad #2</span></div>
+      </div>
+      <div style="padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:'Bricolage Grotesque',sans-serif;font-weight:700">
+        <span>Total deudas TC</span>
+        <span style="color:var(--coral)">RD${fmt(qikBal + (md.debts.bhdBal||0) + (md.debts.bhdUsd||0)*57)}</span>
+      </div>
+    `;
+  }
+
+  // Próximo reto
+  const retoEl = document.getElementById('inicio-reto');
+  if(retoEl) {
+    const prog = md.challengeProgress||{};
+    const next = CHALLENGE_TEMPLATES.find(ch => {
+      if(ch.type==='cumulative') return (G.cumulativeChallenge?.zero_qik||0) < ch.target;
+      return !prog[ch.id+'_done'];
+    });
+    if(!next) { retoEl.innerHTML='<div style="text-align:center;font-size:48px;padding:20px">🏆</div><div style="text-align:center;color:var(--ink2)">¡Todos los retos del mes completados!</div>'; }
+    else {
+      const p = ch_pct(next, md);
+      retoEl.innerHTML = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span style="font-size:28px">${next.icon}</span>
+        <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px">${next.title}</div><div style="font-size:12px;color:var(--ink2)">${next.desc.substring(0,80)}...</div></div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${p}%;background:var(--coral);height:10px"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-top:4px"><span>${p}% completado</span><span>⚡ +${next.xp} XP</span></div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showTab('retos')">Ver todos los retos →</button>`;
+    }
+  }
+
+  // Alerta intereses
+  const alertEl = document.getElementById('inicio-alerta');
+  const alertTxt = document.getElementById('inicio-alerta-txt');
+  if(alertEl && qikInterest > 500) {
+    alertEl.style.display='flex';
+    if(alertTxt) alertTxt.textContent = `Este mes pagarás aprox. RD${fmt(qikInterest)} solo en intereses de la TC Qik (60% anual). Con el saldo actual de RD${fmt(qikBal)}, cada mes que pasa sin liquidarla te cuesta más de RD${fmt(qikInterest)}.`;
+  } else if(alertEl) { alertEl.style.display='none'; }
+
+  renderStreak();
+}
+
+function ch_pct(ch, md) {
+  const prog = md.challengeProgress||{};
+  const p = ch.type==='cumulative' ? (G.cumulativeChallenge?.zero_qik||0) : (prog[ch.id]||0);
+  return Math.min(100, Math.round((p/ch.target)*100));
+}
+
+// ======================== STREAK ========================
+function renderStreak() {
+  const md = currentMonth();
+  const wrap = document.getElementById('streak-days-wrap');
+  if(!wrap) return;
+  const days = ['L','M','M','J','V','S','D'];
+  wrap.innerHTML = days.map((d,i) =>
+    `<button class="day-btn ${md.streak[i]?'marked':''}" onclick="toggleStreak(${i})">${d}</button>`
+  ).join('');
+  const total = (md.streak||[]).filter(Boolean).length;
+  const streakEl = document.getElementById('streak-num');
+  if(streakEl) streakEl.textContent = total;
+  if(total >= 7) earnAch('streak7');
+  if(total > (G.maxStreak||0)) { G.maxStreak = total; save(); }
+}
+
+function toggleStreak(i) {
+  const md = currentMonth();
+  if(!md.streak) md.streak = [false,false,false,false,false,false,false];
+  md.streak[i] = !md.streak[i];
+  if(md.streak[i]) addXP(20, '¡Día activo! 🔥');
+  save();
+  renderStreak();
+}
+
+// ======================== HISTORIAL ========================
+function renderHistorial() {
+  const allKeys = Object.keys(G.months).sort();
+  if(allKeys.length === 0) {
+    const hc = document.getElementById('history-chart');
+    const hl = document.getElementById('history-list');
+    const dc = document.getElementById('debt-chart');
+    if(hc) hc.innerHTML = '<div style="color:var(--ink2);font-size:14px;padding:20px">Aún no hay datos de meses anteriores. Regresa el próximo mes para ver tu historial.</div>';
+    if(hl) hl.innerHTML = '';
+    if(dc) dc.innerHTML = '';
+    return;
+  }
+
+  const months = allKeys.map(k => G.months[k]);
+  const maxIncome = Math.max(...months.map(m=>calcIncome(m)), 1);
+
+  // History chart
+  const hc = document.getElementById('history-chart');
+  if(hc) hc.innerHTML = months.map(m => {
+    const inc = calcIncome(m);
+    const {fixed, variable} = calcExpenses(m);
+    const free = Math.max(0, inc - fixed - variable);
+    const fh = Math.round((fixed/maxIncome)*140);
+    const vh = Math.round((variable/maxIncome)*140);
+    const sh = Math.round((free/maxIncome)*140);
+    const key = getMonthKey(m.year, m.month);
+    return `<div class="hbar-group" onclick="jumpToMonth(${m.year},${m.month})" style="cursor:pointer">
+      <div class="hbar-inner">
+        <div class="hbar" style="height:${fh}px;background:var(--sky)" data-tip="Fijos: RD${fmt(fixed)}"></div>
+        <div class="hbar" style="height:${vh}px;background:var(--rose)" data-tip="Variables: RD${fmt(variable)}"></div>
+        <div class="hbar" style="height:${Math.max(4,sh)}px;background:var(--mint)" data-tip="Libre: RD${fmt(free)}"></div>
+      </div>
+      <div class="hbar-label">${MONTHS[m.month].substring(0,3)}</div>
+    </div>`;
+  }).join('');
+
+  // History list
+  const hl = document.getElementById('history-list');
+  if(hl) hl.innerHTML = months.reverse().map(m => {
+    const inc = calcIncome(m);
+    const {total} = calcExpenses(m);
+    const free = inc - total;
+    const totalPaid = [...(m.payments?.qik||[]),...(m.payments?.bhd||[])].reduce((a,p)=>a+p.amount,0);
+    const streak = (m.streak||[]).filter(Boolean).length;
+    const retosComp = Object.keys(m.challengeProgress||{}).filter(k=>k.endsWith('_done')).length;
+    return `<div class="month-row" onclick="jumpToMonth(${m.year},${m.month})">
+      <div class="month-row-name">${MONTHS[m.month]} ${m.year}</div>
+      <div class="month-row-pills">
+        <span class="mpill" style="background:#edfff8;color:#0a5538">💰 RD${fmt(inc)}</span>
+        <span class="mpill" style="background:#fff2ef;color:#7a2210">📤 RD${fmt(total)}</span>
+        <span class="mpill" style="${free>=0?'background:#edfff8;color:#0a5538':'background:#fff2ef;color:#7a2210'}">${free>=0?'✅':'⚠️'} RD${fmt(free)}</span>
+        ${totalPaid>0?`<span class="mpill" style="background:#eff7ff;color:#123d7a">💸 RD${fmt(totalPaid)} pagado</span>`:''}
+        ${retosComp>0?`<span class="mpill" style="background:#f5f0ff;color:#3a0d7a">🎯 ${retosComp} retos</span>`:''}
+        ${streak>0?`<span class="mpill" style="background:#fff2ef;color:#c0391b">🔥 ${streak} días</span>`:''}
+      </div>
+      <div style="color:var(--coral);font-size:18px">→</div>
+    </div>`;
+  }).join('');
+
+  // Debt chart
+  const dc = document.getElementById('debt-chart');
+  if(dc) {
+    const maxDebt = Math.max(...months.map(m=>(m.debts?.qikBal||0)+(m.debts?.bhdBal||0)), 1);
+    dc.innerHTML = months.reverse().map(m => {
+      const qik = m.debts?.qikBal||0;
+      const bhd = (m.debts?.bhdBal||0)+(m.debts?.bhdUsd||0)*57;
+      const qh = Math.round((qik/maxDebt)*140);
+      const bh = Math.round((bhd/maxDebt)*140);
+      return `<div class="hbar-group">
+        <div class="hbar-inner">
+          <div class="hbar" style="height:${Math.max(4,qh)}px;background:var(--coral)" data-tip="Qik: RD${fmt(qik)}"></div>
+          <div class="hbar" style="height:${Math.max(4,bh)}px;background:var(--gold)" data-tip="BHD: RD${fmt(bhd)}"></div>
+        </div>
+        <div class="hbar-label">${MONTHS[m.month].substring(0,3)}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function jumpToMonth(y, m) {
+  G.currentYear = y; G.currentMonth = m;
+  save();
+  renderAll();
+  showTab('presupuesto');
+}
+
+// ======================== ACHIEVEMENTS ========================
+function earnAch(id) {
+  if(G.achievements[id]) return;
+  G.achievements[id] = true;
+  save();
+  const a = ACHIEVEMENTS_DEF.find(x=>x.id===id);
+  if(a) { showToast(`🏆 Logro: ${a.name} ${a.icon}`); renderLogros(); }
+}
+
+function checkLevelUp(oldXP) {
+  const oldLvl = getLevelIdx(oldXP);
+  const newLvl = getLevelIdx(G.xp);
+  if(newLvl > oldLvl) {
+    showToast(`⬆️ ¡Subiste al nivel ${LEVELS[newLvl].name}!`);
+    launchConfetti();
+    if(newLvl >= 2) earnAch('level2');
+  }
+}
+
+function getLevelIdx(xp) {
+  for(let i=LEVELS.length-1;i>=0;i--) if((xp||0)>=LEVELS[i].min) return i;
+  return 0;
+}
+function getLevelName() { return LEVELS[getLevelIdx(G.xp)].name; }
+
+function renderLogros() {
+  const wrap = document.getElementById('ach-wrap');
+  if(!wrap) return;
+  wrap.innerHTML = ACHIEVEMENTS_DEF.map(a => {
+    const earned = G.achievements[a.id];
+    return `<div class="ach ${earned?'earned':''}">
+      <div class="ach-icon">${a.icon}</div>
+      <div><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div>
+      <div style="margin-left:auto;font-size:20px">${earned?'✨':'🔒'}</div>
+    </div>`;
+  }).join('');
+  const xpEl = document.getElementById('l-xp'); if(xpEl) xpEl.textContent = G.xp;
+  const retosEl = document.getElementById('l-retos');
+  if(retosEl) {
+    const allDone = Object.values(G.months).reduce((sum,m)=>sum+Object.keys(m.challengeProgress||{}).filter(k=>k.endsWith('_done')).length,0);
+    retosEl.textContent = allDone;
+  }
+  const paidEl = document.getElementById('l-paid'); if(paidEl) paidEl.textContent = 'RD'+fmt(G.totalPaid);
+  const streakEl = document.getElementById('l-streak'); if(streakEl) streakEl.textContent = (G.maxStreak||0)+' días';
+}
+
+// ======================== XP ========================
+function addXP(amount, reason) {
+  const old = G.xp;
+  G.xp += amount;
+  save();
+  updateXPBar();
+  checkLevelUp(old);
+}
+
+function updateXPBar() {
+  const idx = getLevelIdx(G.xp);
+  const curr = LEVELS[idx];
+  const next = LEVELS[Math.min(idx+1, LEVELS.length-1)];
+  const pct = idx===LEVELS.length-1 ? 100 : Math.min(100,Math.round(((G.xp-curr.min)/(next.min-curr.min))*100));
+  const fill = document.getElementById('xp-fill');
+  const txt = document.getElementById('xp-txt');
+  const lvl = document.getElementById('level-txt');
+  if(fill) fill.style.width=pct+'%';
+  if(txt) txt.textContent = G.xp+' XP';
+  if(lvl) lvl.textContent = curr.name;
+}
+
+// ======================== TABS ========================
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const sec = document.getElementById('tab-'+name);
+  if(sec) sec.classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t=>{ if(t.getAttribute('onclick')===`showTab('${name}')`) t.classList.add('active'); });
+}
+
+// ======================== TOAST ========================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ======================== CONFETTI ========================
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#ff6b47','#2dd4a0','#f5a623','#4a9eff','#ff4d8f','#8b6fff','#ffd700'];
+  const pieces = Array.from({length:120},()=>({
+    x:Math.random()*canvas.width, y:-20,
+    r:Math.random()*7+3,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    vx:(Math.random()-.5)*6, vy:Math.random()*4+2,
+    angle:Math.random()*360, spin:(Math.random()-.5)*10,
+  }));
+  let f=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle*Math.PI/180);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.5); ctx.restore();
+      p.x+=p.vx; p.y+=p.vy; p.angle+=p.spin; p.vy+=.09;
+    });
+    f++;
+    if(f<100) requestAnimationFrame(draw); else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
+
+// ======================== CHECK HISTORY ========================
+function checkMonthsStreak() {
+  const keys = Object.keys(G.months).sort();
+  if(keys.length >= 3) {
+    let consec = 1;
+    for(let i=1;i<keys.length;i++) {
+      const prev = G.months[keys[i-1]];
+      const curr = G.months[keys[i]];
+      if(curr.month === (prev.month+1)%12) consec++;
+      else consec = 1;
+    }
+    if(consec >= 3) earnAch('three_months');
+  }
+}
+
+// ======================== INIT ========================
+window.addEventListener('DOMContentLoaded', ()=>{
+  // Ensure current month data exists
+  getMonthData(G.currentYear, G.currentMonth);
+  checkMonthsStreak();
+  renderAll();
+  // Small delay for animations
+  setTimeout(()=>{
+    document.querySelectorAll('.bar-fill,.ch-fill,.goal-fill,.debt-fill').forEach(el=>{
+      const w = el.style.width; el.style.width='0'; setTimeout(()=>el.style.width=w, 100);
+    });
+  }, 200);
+});
+</script>
+</body>
+</html>
