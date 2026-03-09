@@ -186,6 +186,27 @@
   .freq-trimestral { background: rgba(124,92,252,.12); color: var(--chai-accent2); }
   .freq-anual { background: rgba(245,200,66,.12); color: var(--chai-yellow); }
 
+  .portal-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 6px 28px 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--chai-border);
+    background: var(--chai-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23636a82'/%3E%3C/svg%3E") no-repeat right 10px center;
+    color: var(--chai-subtext);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+    transition: border-color .2s;
+  }
+  .portal-select:focus { border-color: var(--chai-accent2); }
+  .portal-select.portal_pendiente  { color: var(--chai-subtext); }
+  .portal-select.portal_link_enviado { border-color: rgba(79,142,247,.5); color: var(--chai-accent); background-color: rgba(79,142,247,.08); }
+  .portal-select.portal_inscrito   { border-color: rgba(34,201,122,.5); color: var(--chai-green); background-color: rgba(34,201,122,.08); }
+  .portal-select.portal_no_inscribe { border-color: rgba(242,92,92,.4); color: var(--chai-red); background-color: rgba(242,92,92,.07); }
+
   .attn-badge {
     font-size: 11px;
     padding: 3px 10px;
@@ -446,6 +467,10 @@
       <div class="stat-num" id="confirmed-count">0</div>
       <div class="stat-label">Confirmados</div>
     </div>
+    <div class="stat-item">
+      <div class="stat-num" id="portal-count" style="color:var(--chai-accent2)">0</div>
+      <div class="stat-label">Inscritos Portal</div>
+    </div>
   </div>
 </div>
 
@@ -483,6 +508,7 @@
       <th>Frecuencia</th>
       <th>Vendedor</th>
       <th>Estado Notificación</th>
+      <th>Portal de Cobros</th>
       <th>Comentarios</th>
       <th>Acción</th>
     </tr>
@@ -559,7 +585,7 @@ function currSymbol(ref) { return DOP_REFS.includes(ref) ? 'RD$' : 'US$'; }
 // State: status + notes per client (by ref)
 const state = {};
 rawClients.forEach(c => {
-  state[c.ref] = { status: 'pendiente', notes: '' };
+  state[c.ref] = { status: 'pendiente', portal: 'portal_pendiente', notes: '' };
 });
 
 let currentFilter = 'all';
@@ -588,7 +614,7 @@ function buildMessage(client) {
 
   return `Estimado/a equipo de ${client.name},
 
-Esperamos que se encuentren muy bien. Nos comunicamos con ustedes con anticipación para informarles sobre un ajuste en nuestros precios que entrará en vigencia a partir del 1 de junio de 2026.
+Esperamos que se encuentren muy bien. Nos comunicamos con ustedes con anticipación para informarles sobre dos novedades importantes: un ajuste en nuestros precios y una nueva forma de gestionar sus pagos, ambos vigentes a partir del 1 de junio de 2026.
 
 ¿Qué incluye su servicio actual?
 
@@ -604,9 +630,15 @@ El costo de la infraestructura tecnológica ha aumentado considerablemente a niv
   Ajuste:        +${diffPct}%
   Vigencia:      1 de junio de 2026
 
+Nueva integración de pagos — Portal de cobros automáticos
+
+A partir del 1 de junio también estaremos implementando nuestra nueva política de pagos a través de nuestro portal de cobros. Este sistema les permitirá inscribir la tarjeta de su preferencia de forma segura, y a partir de ese momento, cada vez que nuestro sistema genere su factura correspondiente, el cobro se realizará de forma automática sin que tengan que hacer ninguna gestión adicional.
+
+Este cambio busca simplificar el proceso de pago para ustedes y garantizar la continuidad ininterrumpida de su servicio. En los próximos días estaremos enviando el enlace de acceso al portal para que puedan registrar su método de pago con anticipación.
+
 Queremos que sepan que valoramos profundamente su confianza en CHAI. Seguiremos comprometidos con brindarles el mismo nivel de atención y calidad que nos caracteriza.
 
-Si tienen alguna pregunta, pueden escribirnos directamente a este correo o contactarnos por WhatsApp. Estaremos felices de conversar.
+Si tienen alguna pregunta sobre el ajuste de precios o el nuevo sistema de pagos, pueden escribirnos directamente a este correo o contactarnos por WhatsApp. Estaremos felices de conversar.
 
 Gracias por ser parte de nuestra familia de clientes.
 
@@ -635,6 +667,7 @@ function renderTable() {
     const np = newPrice(c.price, c.ref);
     const diff = np - c.price;
     const st = state[c.ref].status;
+    const pt = state[c.ref].portal;
     const notes = state[c.ref].notes;
     const sym = currSymbol(c.ref);
     const cur = currency(c.ref);
@@ -662,6 +695,14 @@ function renderTable() {
         </select>
       </td>
       <td>
+        <select class="portal-select ${pt}" onchange="updatePortal('${c.ref}', this)">
+          <option value="portal_pendiente" ${pt==='portal_pendiente'?'selected':''}>⏳ Pendiente</option>
+          <option value="portal_link_enviado" ${pt==='portal_link_enviado'?'selected':''}>🔗 Link enviado</option>
+          <option value="portal_inscrito" ${pt==='portal_inscrito'?'selected':''}>💳 Inscrito</option>
+          <option value="portal_no_inscribe" ${pt==='portal_no_inscribe'?'selected':''}>✗ No se inscribe</option>
+        </select>
+      </td>
+      <td>
         <input class="notes-input" type="text" placeholder="Agregar comentario..." value="${notes}" onchange="updateNotes('${c.ref}', this.value)" />
       </td>
       <td>
@@ -682,6 +723,12 @@ function updateStatus(ref, sel) {
   updateStats();
 }
 
+function updatePortal(ref, sel) {
+  state[ref].portal = sel.value;
+  sel.className = `portal-select ${sel.value}`;
+  updateStats();
+}
+
 function updateNotes(ref, val) {
   state[ref].notes = val;
 }
@@ -690,11 +737,13 @@ function updateStats() {
   const total = rawClients.length;
   const sent = rawClients.filter(c => ['enviado','confirmado','sin_respuesta'].includes(state[c.ref].status)).length;
   const confirmed = rawClients.filter(c => state[c.ref].status === 'confirmado').length;
+  const portalInscrito = rawClients.filter(c => state[c.ref].portal === 'portal_inscrito').length;
   const pct = Math.round((sent / total) * 100);
 
   document.getElementById('total-clients').textContent = total;
   document.getElementById('sent-count').textContent = sent;
   document.getElementById('confirmed-count').textContent = confirmed;
+  document.getElementById('portal-count').textContent = portalInscrito;
   document.getElementById('prog-fill').style.width = pct + '%';
   document.getElementById('prog-pct').textContent = pct + '%';
   document.getElementById('prog-conf').textContent = confirmed + ' confirmados';
